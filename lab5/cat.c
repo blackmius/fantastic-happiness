@@ -45,7 +45,10 @@ int main(int argc, char *argv[]) {
     }
     
     FILE* f = fopen(fname, "r");
-    
+    if (f == NULL) {
+        puts("Невозможно отрыть файл\n");
+        return 1;
+    }
     // если пользователь указал 0 или не указывал
     if (n != 0) {
         char c;

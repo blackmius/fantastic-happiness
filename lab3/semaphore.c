@@ -71,11 +71,11 @@ int main(int argc, char **argv) {
         perror("sem_destroy"); exit(1);
     }
 
-    if (sem_destroy(&mutex_sem) == -1) {
+    if (sem_destroy(&buffer_count_sem) == -1) {
         perror("sem_destroy"); exit(1);
     }
 
-    if (sem_destroy(&mutex_sem) == -1) {
+    if (sem_destroy(&spool_signal_sem) == -1) {
         perror("sem_destroy"); exit(1);
     }
     exit (0);

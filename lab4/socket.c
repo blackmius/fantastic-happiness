@@ -104,7 +104,7 @@ int main(void) {
     for (int i = 0; i < n; i++) {
         if (fork() == 0) {
             printf("Вычисление строки %d процессом номер %d\n", i, getpid());
-            bind(sock, (struct sockaddr *) &name, size);
+            //bind(sock, (struct sockaddr *) &name, size);
             sem_wait(read_sem);
             printf("Считал %lu байта n=%d\n", recvfrom(sock, &n, sizeof(int), 0, NULL, NULL), n);
             for (int j = 0; j < n; j++) {
@@ -122,7 +122,9 @@ int main(void) {
     }
     int res = 0, i = 0;
     while(i++ < n && !res) {
-        sendto(sock, &n, sizeof(int), 0, (struct sockaddr *) &name, size);
+        if (sendto(sock, &n, sizeof(int), 0, (struct sockaddr *) &name, size)) {
+            perror("sending error");
+        }
         for (int j = 0; j < n; j++) sendto(sock, B[j], 2*n*sizeof(double), 0, (struct sockaddr *) &name, size);
         sem_post(read_sem);
         sem_wait(write_sem);

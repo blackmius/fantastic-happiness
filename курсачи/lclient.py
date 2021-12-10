@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import time
 import socket
+from datetime import datetime
 
 class ToolTip(object):
 
@@ -123,69 +124,90 @@ class App(tk.Frame):
         tk.Label(self).pack(pady=15)
         self.b1 = tk.Button(
             self, state='disabled',
-            text='Название используемого видеоадаптера',
-            command=self.getvga
+            text='Ширина и высота основного монитора',
+            command=self.resolution
         )
         self.b1.pack(pady=5, fill='x')
         self.b2 = tk.Button(
             self, state='disabled',
-            text='Скрыть окно серверного процесса\nна переданное время',
-            command=self.open_window
+            text='Цвет пиксела',
+            command=self.pixel
         )
         self.b2.pack(pady=5, fill='x')
         self.b3 = tk.Button(
             self, state='disabled',
-            text='Процент используемой физической памяти',
-            command=self.getfreehmem
+            text='Идентификатор серверного процесса',
+            command=self.pid
         )
         self.b3.pack(pady=5, fill='x')
         self.b4 = tk.Button(
             self, state='disabled',
-            text='Процент используемой виртуальной памяти',
-            command=self.getfreevmem
+            text='Дескриптор серверного процесса',
+            command=self.fd
         )
         self.b4.pack(pady=5, fill='x')
-        
-    def getvga(self):
+    
+    def resolution(self):
         self.cn1.sock.sendall(bytearray([1]))
         time = int.from_bytes(self.cn1.sock.recv(4), 'little')
-        info = self.cn1.sock.recv(4096).decode()
-        
-        w = tk.Toplevel(self)
-        w.title("Данные видеоадаптера")
-        w = tk.Label(w, text=info)
-        w.grid(row=0, column=0, columnspan=3)
-        
-    def open_window(self):
+        time = datetime.fromtimestamp(time).ctime()
+        width = int.from_bytes(self.cn1.sock.recv(2), 'little')
+        height = int.from_bytes(self.cn1.sock.recv(2), 'little')
+        info = f'Время на сервере {time}\nРазмеры монитора {width}x{height}'
+        messagebox.showinfo('Ответ', info)
+    
+    def pixel(self):
         def run():
-            payload = bytearray([2])+int.to_bytes(int(value.get()), 2, 'little')
+            payload = bytearray([2]) + \
+                int.to_bytes(int(x.get()), 2, 'little') + \
+                int.to_bytes(int(y.get()), 2, 'little')
             self.cn1.sock.sendall(payload)
             time = int.from_bytes(self.cn1.sock.recv(4), 'little')
-            status = int.from_bytes(self.cn1.sock.recv(4), 'little')
+            time = datetime.fromtimestamp(time).ctime()
+            color = self.cn1.sock.recv(7).decode()
+            info = f'Время на сервере {time}\nЦвет пиксела с x={x.get()}, y={y.get()}\n{color}'
+            messagebox.showinfo('Ответ', info)
     
         w = tk.Toplevel(self)
         w.title("Введите параметры запроса")
         f = tk.Frame(w)
         f.pack(padx=10, pady=10)
-        tk.Label(f, text='Время появления окна', anchor='w').pack(fill='both')
-        value = tk.StringVar()
-        tk.Entry(f,
-            textvariable=value, validate='all',
-            validatecommand=(self.register(lambda x: x == '' or str.isdigit(x)), '%P')
-        ).pack(fill='x')
-        tk.Button(f, text='OK', command=run).pack(pady=10)
         
-    def getfreehmem(self):
+        xf = tk.Frame(f)
+        xf.pack()
+        tk.Label(xf, text='Координата X', anchor='w').pack(fill='both', side='left')
+        x = tk.StringVar()
+        tk.Entry(xf,
+            textvariable=x, validate='all',
+            validatecommand=(self.register(lambda x: x == '' or str.isdigit(x)), '%P')
+        ).pack(fill='x', side='right')
+        
+        yf = tk.Frame(f)
+        yf.pack()
+        tk.Label(yf, text='Координата Y', anchor='w').pack(fill='both', side='left')
+        y = tk.StringVar()
+        tk.Entry(yf,
+            textvariable=y, validate='all',
+            validatecommand=(self.register(lambda x: x == '' or str.isdigit(x)), '%P')
+        ).pack(fill='x', side='right')
+        
+        tk.Button(f, text='OK', command=run).pack(pady=10)
+    
+    def pid(self):
         self.cn2.sock.sendall(bytearray([3]))
         time = int.from_bytes(self.cn2.sock.recv(4), 'little')
-        percent = int.from_bytes(self.cn2.sock.recv(4), 'little') / 100
-        print(percent)
-        
-    def getfreevmem(self):
+        time = datetime.fromtimestamp(time).ctime()
+        pid = int.from_bytes(self.cn2.sock.recv(4), 'little')
+        info = f'Время на сервере {time}\nИдентификатор серверного процесса = {pid}'
+        messagebox.showinfo('Ответ', info)
+    
+    def fd(self):
         self.cn2.sock.sendall(bytearray([4]))
         time = int.from_bytes(self.cn2.sock.recv(4), 'little')
-        percent = int.from_bytes(self.cn2.sock.recv(4), 'little') / 100
-        print(percent)
+        time = datetime.fromtimestamp(time).ctime()
+        fd = int.from_bytes(self.cn2.sock.recv(4), 'little')
+        info = f'Время на сервере {time}\nДескриптор серверного процесса = {fd}'
+        messagebox.showinfo('Ответ', info)
     
         
 root = tk.Tk(className='Клиент для курсовой работы')

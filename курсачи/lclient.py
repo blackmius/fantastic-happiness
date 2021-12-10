@@ -179,13 +179,13 @@ class App(tk.Frame):
         self.cn2.sock.sendall(bytearray([3]))
         time = int.from_bytes(self.cn2.sock.recv(4), 'little')
         percent = int.from_bytes(self.cn2.sock.recv(4), 'little') / 100
-        messagebox.showinfo('Ответ', str(percent)+'%')
+        print(percent)
         
     def getfreevmem(self):
         self.cn2.sock.sendall(bytearray([4]))
         time = int.from_bytes(self.cn2.sock.recv(4), 'little')
         percent = int.from_bytes(self.cn2.sock.recv(4), 'little') / 100
-        messagebox.showinfo('Ответ', str(percent)+'%')
+        print(percent)
     
         
 root = tk.Tk(className='Клиент для курсовой работы')

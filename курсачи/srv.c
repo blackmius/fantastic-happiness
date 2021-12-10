@@ -62,7 +62,7 @@ static void activate (GtkApplication* app, gpointer user_data) {
     gtk_window_set_title(GTK_WINDOW(window), "Window");
     gtk_window_set_default_size(GTK_WINDOW (window), 200, 200);
     gtk_widget_show_all(window);
-    g_timeout_add(1000, timer_callback, window);
+    g_timeout_add(time, timer_callback, window);
 }
 
 void window_flick(int sock) {
